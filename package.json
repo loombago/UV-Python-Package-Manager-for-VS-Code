@@ -1,0 +1,181 @@
+{
+  "name": "vsc-uv-package-manager",
+  "displayName": "UV Python Package Manager",
+  "description": "Production-grade Python package manager for VS Code (Python 3.10+) with uv preference, TreeView explorers, interactive WebView UI, and DI architecture.",
+  "version": "1.0.0",
+  "publisher": "antigravity-dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antigravity-dev/vsc-uv-package-manager"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "python",
+    "uv",
+    "pip",
+    "package manager",
+    "virtualenv",
+    "pyproject"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "workspaceContains:pyproject.toml",
+    "workspaceContains:requirements.txt",
+    "workspaceContains:uv.lock",
+    "onLanguage:python"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "uvPackageManager",
+          "title": "UV Package Manager",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "uvPackageManager": [
+        {
+          "id": "uvPkgInstalledView",
+          "name": "Installed Packages",
+          "contextualTitle": "Python Packages"
+        },
+        {
+          "id": "uvPkgEnvView",
+          "name": "Python Environment",
+          "contextualTitle": "Environment & Tooling"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "uvPkgManager.openPanel",
+        "title": "UV Package Manager: Open Package Manager UI",
+        "icon": "$(package)"
+      },
+      {
+        "command": "uvPkgManager.listPackages",
+        "title": "UV Package Manager: Refresh / List Packages",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "uvPkgManager.installPackage",
+        "title": "UV Package Manager: Install Package",
+        "icon": "$(add)"
+      },
+      {
+        "command": "uvPkgManager.removePackage",
+        "title": "UV Package Manager: Remove Package",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "uvPkgManager.updatePackage",
+        "title": "UV Package Manager: Update Package",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "uvPkgManager.selectPythonPath",
+        "title": "UV Package Manager: Select Python Interpreter",
+        "icon": "$(symbol-misc)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "uvPkgManager.installPackage",
+          "when": "view == uvPkgInstalledView",
+          "group": "navigation"
+        },
+        {
+          "command": "uvPkgManager.listPackages",
+          "when": "view == uvPkgInstalledView",
+          "group": "navigation"
+        },
+        {
+          "command": "uvPkgManager.openPanel",
+          "when": "view == uvPkgInstalledView",
+          "group": "navigation"
+        },
+        {
+          "command": "uvPkgManager.selectPythonPath",
+          "when": "view == uvPkgEnvView",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "uvPkgManager.updatePackage",
+          "when": "view == uvPkgInstalledView && viewItem == outdatedPackage",
+          "group": "inline"
+        },
+        {
+          "command": "uvPkgManager.removePackage",
+          "when": "view == uvPkgInstalledView && (viewItem == installedPackage || viewItem == outdatedPackage)",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "UV Python Package Manager",
+      "properties": {
+        "uvPkgManager.preferUv": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prefer uv over pip whenever uv is available on PATH or configured."
+        },
+        "uvPkgManager.uvPath": {
+          "type": "string",
+          "default": "uv",
+          "description": "Path or command name for the uv executable."
+        },
+        "uvPkgManager.pythonPath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional explicit path to a Python 3.10+ interpreter."
+        },
+        "uvPkgManager.checkOutdated": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check for outdated packages when listing installed packages."
+        },
+        "uvPkgManager.commandTimeoutMs": {
+          "type": "number",
+          "default": 120000,
+          "minimum": 5000,
+          "description": "Maximum execution time in milliseconds for package manager CLI commands."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "typecheck": "tsc --noEmit",
+    "compile": "tsc && node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "package": "tsc --noEmit && node esbuild.js --production",
+    "bundle:webpack": "tsc --noEmit && webpack --mode production",
+    "test": "npm run compile && node out/test/runTests.js",
+    "test:unit": "npm run compile && node out/test/runTests.js --suite unit",
+    "test:integration": "npm run compile && node out/test/runTests.js --suite integration",
+    "vsix": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "@types/vscode": "^1.95.0",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.24.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.6.3",
+    "webpack": "^5.96.1",
+    "webpack-cli": "^5.1.4"
+  }
+}

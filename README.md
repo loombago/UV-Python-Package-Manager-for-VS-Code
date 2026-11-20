@@ -1,129 +1,140 @@
-# UV Python Package Manager for VS Code
+# UV Python Package Manager (`vsc-uv-package-manager`)
 
-[![VS Code Engine](https://img.shields.io/badge/VS%20Code-%5E1.95.0-007ACC?logo=visualstudiocode)](https://code.visualstudio.com/)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![uv](https://img.shields.io/badge/Preferred%20Backend-uv-DE5FE9?logo=astral)](https://docs.astral.sh/uv/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
-
-**UV Python Package Manager (`vsc-uv-package-manager`)** is a Visual Studio Code extension for managing Python 3.10+ dependencies directly from the editor. It prioritizes Astral's [`uv`](https://docs.astral.sh/uv/) whenever available and automatically falls back to `pip` when `uv` is not installed.
+A production-quality Visual Studio Code extension for managing Python 3.10+ packages using Dependency Injection, preferring [`uv`](https://docs.astral.sh/uv/) whenever available with seamless fallback to `pip`.
 
 ---
 
-## Features
-
-- **`uv`-First Architecture with Smart Fallback**
-  - **`uv-project` mode**: Uses `uv add`, `uv remove`, and `uv lock --upgrade-package` + `uv sync` when `pyproject.toml` is present.
-  - **`uv-pip` mode**: Uses `uv pip install`, `uv pip uninstall`, and `uv pip list --format json` for virtual environments without `pyproject.toml`.
-  - **`pip` fallback mode**: Uses `python -m pip` automatically when `uv` is unavailable or disabled.
-- **Activity Bar TreeViews**
-  - **Installed Packages**: Browse installed packages, see outdated version indicators (`current → latest`), expand package metadata (`Summary`, `License`, `Author`, `Requires`, `Location`), and update/remove packages inline.
-  - **Python Environment**: Inspect the active backend (`uv` vs `pip`), `uv` CLI version, Python 3.10+ interpreter path, `.venv` location, and detected manifest files (`pyproject.toml`, `uv.lock`, `requirements.txt`).
-- **Interactive WebView Dashboard**
-  - Search and filter installed packages or toggle **Outdated only**.
-  - Look up live package metadata and release constraints directly from the **PyPI JSON API**.
-  - Install packages with version constraints (e.g., `>=0.27.0`), extras, and `--dev` dependency support.
-  - Inspect full package metadata and monitor CLI execution in the built-in **Activity Log**.
-- **Automatic File & Config Watchers**
-  - Automatically refreshes views whenever `pyproject.toml`, `uv.lock`, or `requirements.txt` changes.
-- **Security & Reliability**
-  - Strict PEP 508 / PEP 440 validation and shell-free process execution via `execFile`.
-  - Nonce-based Content Security Policy (CSP) for WebView assets.
-  - Built with a lightweight, type-safe Dependency Injection (IoC) container.
-
----
-
-## Requirements
-
-- **VS Code**: `1.95.0` or newer
-- **Python**: `3.10` or newer
-- **`uv`** *(recommended)*: Install via `pipx install uv`, `winget install --id=astral-sh.uv -e`, or from [docs.astral.sh/uv](https://docs.astral.sh/uv/)
-
----
-
-## Installation
-
-### Install from `.vsix`
-
-1. Download `vsc-uv-package-manager-1.0.0.vsix` from the [Releases](../../releases) page (or build it locally with `npm run vsix`).
-2. Install via CLI:
-   ```bash
-   code --install-extension vsc-uv-package-manager-1.0.0.vsix
-   ```
-   Or in VS Code: open **Extensions** (`Ctrl+Shift+X`) → **`...`** → **Install from VSIX...**.
-
----
-
-## Commands
-
-| Command ID | Title | Description |
-| :--- | :--- | :--- |
-| `uvPkgManager.openPanel` | **UV Package Manager: Open Package Manager UI** | Opens the interactive WebView dashboard |
-| `uvPkgManager.listPackages` | **UV Package Manager: Refresh / List Packages** | Refreshes installed and outdated package lists |
-| `uvPkgManager.installPackage` | **UV Package Manager: Install Package** | Installs a package (`name`, extras, version constraint) |
-| `uvPkgManager.removePackage` | **UV Package Manager: Remove Package** | Uninstalls a selected package from the environment |
-| `uvPkgManager.updatePackage` | **UV Package Manager: Update Package** | Upgrades a package to its latest or specified version |
-| `uvPkgManager.selectPythonPath` | **UV Package Manager: Select Python Interpreter** | Selects a custom Python 3.10+ interpreter binary |
-
----
-
-## Extension Settings
-
-| Setting | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `uvPkgManager.preferUv` | `boolean` | `true` | Prefer `uv` over `pip` whenever `uv` is available on `PATH` or configured |
-| `uvPkgManager.uvPath` | `string` | `"uv"` | Path or executable name for the `uv` binary |
-| `uvPkgManager.pythonPath` | `string` | `""` | Optional explicit path to a Python 3.10+ interpreter |
-| `uvPkgManager.checkOutdated` | `boolean` | `true` | Check for outdated packages when listing installed packages |
-| `uvPkgManager.commandTimeoutMs` | `number` | `120000` | Maximum execution time (ms) for package manager CLI commands |
-
----
-
-## Architecture & Dependency Injection
+## 1. Architecture Overview
 
 ```text
 src/
-├── extension.ts                     # Entrypoint: activate(), deactivate(), listPackages(), installPackage(), removePackage(), updatePackage()
-├── types/package.ts                 # Domain interfaces & WebView message contracts
+├── extension.ts                  # Extension entrypoint: activate(), deactivate(), listPackages(), installPackage(), removePackage(), updatePackage()
+├── types/package.ts              # Shared domain models and WebView message contracts
 ├── di/
-│   ├── container.ts                 # IoC ServiceContainer (singleton, transient, child scopes, cycle detection)
-│   └── tokens.ts                    # Strongly-typed ServiceToken<T> symbols
+│   ├── container.ts              # ServiceContainer (singleton, transient, child scopes, cycle detection, dispose)
+│   └── tokens.ts                 # Typed ServiceToken<T> identifiers
 ├── services/
-│   ├── loggerService.ts             # VS Code OutputChannel logger
-│   ├── processRunner.ts             # Safe execFile process runner with timeout & AbortSignal
-│   ├── pythonEnvironmentService.ts  # Python 3.10+, .venv, pyproject.toml, uv.lock & uv discovery
-│   ├── packageManagerService.ts     # uv-project, uv-pip, and pip package operations
-│   └── pypiSearchService.ts         # PyPI JSON API client
+│   ├── loggerService.ts          # OutputChannel-backed structured logger
+│   ├── processRunner.ts          # Safe execFile wrapper with timeout, cancellation, and UTF-8 / no-progress env
+│   ├── pythonEnvironmentService.ts # Detects Python 3.10+, .venv, pyproject.toml, uv.lock, and uv CLI
+│   ├── packageManagerService.ts  # Implements list, install, remove, update, and metadata inspection
+│   └── pypiSearchService.ts      # PyPI JSON API metadata & version lookup
 ├── views/
-│   ├── installedPackagesTreeProvider.ts
-│   └── environmentTreeProvider.ts
+│   ├── installedPackagesTreeProvider.ts # Sidebar TreeView for installed & outdated packages
+│   └── environmentTreeProvider.ts       # Sidebar TreeView for active backend, Python, and manifests
 ├── webview/
-│   └── packageManagerPanel.ts       # Nonce-CSP WebView controller
-└── test/                            # Unit & integration tests + VS Code and service mocks
+│   └── packageManagerPanel.ts    # CSP-hardened WebView controller
+└── test/
+    ├── mocks/                    # VS Code API shim and in-memory service mocks
+    ├── unit/                     # Unit tests for DI, environment detection, and package operations
+    ├── integration/              # End-to-end activation & real host Python/uv detection tests
+    └── runTests.ts               # Node test runner entry point
+media/
+├── icon.svg                      # Activity Bar vector icon
+├── webview.css                   # Theme-aware stylesheet
+└── webview.js                    # Interactive WebView UI script
+sample-workspace/                 # Python 3.10+ sample project configured for uv
+```
+
+### Backend Selection Strategy
+
+1. **`uv-project`**: Active when `uvPkgManager.preferUv` is enabled, `uv` is available, and `pyproject.toml` exists in the workspace (`uv add`, `uv remove`, `uv lock --upgrade-package` + `uv sync`, `uv pip list --format json`).
+2. **`uv-pip`**: Active when `uv` is available without a `pyproject.toml` (`uv pip install`, `uv pip uninstall`, `uv pip list --format json`).
+3. **`pip`**: Automatic fallback when `uv` is unavailable or disabled (`python -m pip install`, `python -m pip uninstall -y`, `python -m pip list --format json`).
+
+---
+
+## 2. Development Setup
+
+### Prerequisites
+
+- **Node.js**: 20.x or newer
+- **VS Code**: 1.95.0 or newer
+- **Python**: 3.10 or newer
+- **`uv`** (recommended): `0.4+`
+
+### Install Dependencies & Build
+
+```bash
+npm install
+npm run compile
+```
+
+For continuous development with esbuild watch mode:
+
+```bash
+npm run watch
+```
+
+Press `F5` in VS Code to launch an Extension Development Host with `sample-workspace/` open.
+
+### Alternative Webpack Production Bundle
+
+```bash
+npm run bundle:webpack
 ```
 
 ---
 
-## Development & Testing
+## 3. Testing Setup & Instructions
+
+Tests execute directly in Node.js 20+ via `node:test` and `node:assert/strict`, using `src/test/mocks/vscodeMock.ts` for headless VS Code API simulation alongside `src/test/mocks/mockServices.ts` and real host environment checks.
 
 ```bash
-# Install dependencies
-npm install
-
-# Type-check and bundle with esbuild
-npm run compile
-
-# Watch mode for active development
-npm run watch
-
 # Run all unit and integration tests
 npm test
 
-# Build production VSIX package
-npm run vsix
+# Run only unit tests
+npm run test:unit
+
+# Run only integration tests
+npm run test:integration
 ```
 
 ---
 
-## License
+## 4. VSIX Build Instructions
 
-Released under the [MIT License](./LICENSE).
+1. Ensure dependencies are installed and compilation succeeds:
+   ```bash
+   npm install
+   npm run package
+   ```
+2. Build the `.vsix` archive using `@vscode/vsce`:
+   ```bash
+   npx vsce package
+   ```
+   This produces `vsc-uv-package-manager-1.0.0.vsix` (excluding `src/`, `out/`, and `sample-workspace/` as configured in `.vscodeignore`).
+
+---
+
+## 5. Marketplace Publishing Instructions
+
+1. Create a publisher on the [Visual Studio Marketplace Management Portal](https://marketplace.visualstudio.com/manage) matching `"publisher"` in `package.json` (`antigravity-dev` or your publisher ID).
+2. Generate a Personal Access Token (PAT) in Azure DevOps with **Marketplace (Publish)** scope.
+3. Log in and publish:
+   ```bash
+   npx vsce login <your-publisher-id>
+   npx vsce publish
+   ```
+   Or upload the generated `.vsix` manually through the Marketplace portal.
+
+---
+
+## 6. Installation Guide
+
+- **From VSIX**:
+  ```bash
+  code --install-extension vsc-uv-package-manager-1.0.0.vsix
+  ```
+- **From VS Code UI**: Open Extensions (`Ctrl+Shift+X`), click `...` -> **Install from VSIX...**, and select the `.vsix` file.
+
+---
+
+## 7. Future Roadmap
+
+- Dependency tree visualization (`uv tree` interactive graph in WebView).
+- Multi-root workspace selector and `uv venv` creation wizard from the Environment TreeView.
+- Vulnerability scanning integration (`pip-audit` / OSV database alerts).
+- `pyproject.toml` CodeLens actions for inline upgrade/remove buttons.
+- Lockfile diff preview prior to running `uv sync`.
