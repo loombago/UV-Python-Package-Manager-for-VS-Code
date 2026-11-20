@@ -2,7 +2,7 @@
   "name": "vsc-uv-package-manager",
   "displayName": "UV Python Package Manager",
   "description": "Production-grade Python package manager for VS Code (Python 3.10+) with uv preference, TreeView explorers, interactive WebView UI, and DI architecture.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "antigravity-dev",
   "license": "MIT",
   "repository": {
@@ -86,6 +86,11 @@
         "command": "uvPkgManager.selectPythonPath",
         "title": "UV Package Manager: Select Python Interpreter",
         "icon": "$(symbol-misc)"
+      },
+      {
+        "command": "uvPkgManager.createVirtualEnv",
+        "title": "UV Package Manager: Create Virtual Environment (.venv)",
+        "icon": "$(add)"
       }
     ],
     "menus": {
@@ -103,6 +108,11 @@
         {
           "command": "uvPkgManager.openPanel",
           "when": "view == uvPkgInstalledView",
+          "group": "navigation"
+        },
+        {
+          "command": "uvPkgManager.createVirtualEnv",
+          "when": "view == uvPkgEnvView",
           "group": "navigation"
         },
         {
