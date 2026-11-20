@@ -1,0 +1,11 @@
+node_modules/
+out/
+dist/
+*.vsix
+.vscode-test/
+
+# Python / sample-workspace artifacts
+.venv/
+venv/
+__pycache__/
+*.pyc
