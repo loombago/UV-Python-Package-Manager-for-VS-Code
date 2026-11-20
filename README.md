@@ -1,6 +1,6 @@
 # UV Python Package Manager (`vsc-uv-package-manager`)
 
-A production-quality Visual Studio Code extension for managing Python 3.10+ packages using Dependency Injection, preferring [`uv`](https://docs.astral.sh/uv/) whenever available with seamless fallback to `pip`.
+Visual Studio Code extension for managing Python 3.10+ packages using Dependency Injection, preferring [`uv`](https://docs.astral.sh/uv/) whenever available with seamless fallback to `pip`.
 
 ---
 
