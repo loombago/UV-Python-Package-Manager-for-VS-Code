@@ -131,7 +131,7 @@ npm run test:integration
 
 ---
 
-## 7. Future Roadmap
+## 7. Future Roadmap (updated for release 1.5.0)
 
 - Dependency tree visualization (`uv tree` interactive graph in WebView) -- DONE
 - Multi-root workspace selector and `uv venv` creation wizard from the Environment TreeView -- DONE
