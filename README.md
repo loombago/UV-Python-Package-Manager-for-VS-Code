@@ -104,7 +104,7 @@ npm run test:integration
    ```bash
    npx vsce package
    ```
-   This produces `vsc-uv-package-manager-1.0.0.vsix` (excluding `src/`, `out/`, and `sample-workspace/` as configured in `.vscodeignore`).
+   This produces `vsc-uv-package-manager-1.6.0.vsix` (excluding `src/`, `out/`, and `sample-workspace/` as configured in `.vscodeignore`).
 
 ---
 
