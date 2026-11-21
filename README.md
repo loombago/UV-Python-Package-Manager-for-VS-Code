@@ -133,7 +133,7 @@ npm run test:integration
 
 ## 7. Future Roadmap
 
-- Dependency tree visualization (`uv tree` interactive graph in WebView).
+- Dependency tree visualization (`uv tree` interactive graph in WebView) -- DONE
 - Multi-root workspace selector and `uv venv` creation wizard from the Environment TreeView.
 - Vulnerability scanning integration (`pip-audit` / OSV database alerts).
 - `pyproject.toml` CodeLens actions for inline upgrade/remove buttons.
