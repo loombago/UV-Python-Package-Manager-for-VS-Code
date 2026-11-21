@@ -125,7 +125,7 @@ npm run test:integration
 
 - **From VSIX**:
   ```bash
-  code --install-extension vsc-uv-package-manager-1.0.0.vsix
+  code --install-extension vsc-uv-package-manager-1.6.0.vsix
   ```
 - **From VS Code UI**: Open Extensions (`Ctrl+Shift+X`), click `...` -> **Install from VSIX...**, and select the `.vsix` file.
 
